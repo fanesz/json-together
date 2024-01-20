@@ -1,9 +1,11 @@
-package websocket
+package wsConfig
 
 import (
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
@@ -11,11 +13,11 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func Upgrade(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
+func Upgrade(c *gin.Context) (*websocket.Conn, error) {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
 	}
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
 		return nil, err

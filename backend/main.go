@@ -1,38 +1,42 @@
 package main
 
 import (
-	"backend/config/websocket"
-	"fmt"
-	"net/http"
+	"backend/api/room"
+	"backend/api/user"
+	"backend/api/websocket"
+	"backend/config/database"
+	wsConfig "backend/config/websocket"
+
+	// "backend/config/websocket"
+	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
-func serveWS(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("WebSocket Endpoint Hit")
+func main() {
+	db := config.InitDB()
 
-	conn, err := websocket.Upgrade(w, r)
+	router := gin.Default()
 
-	if err != nil {
-		fmt.Fprintf(w, "%+v\n", err)
-	}
-	client := &websocket.Client{
-		Conn: conn,
-		Pool: pool,
-	}
-	pool.Register <- client
-	client.Read()
-}
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST"},
+		AllowHeaders:     []string{"Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "http://localhost:3000"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 
-func setupRoutes() {
-	pool := websocket.NewPool()
+	pool := wsConfig.NewPool()
 	go pool.Start()
 
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWS(pool, w, r)
-	})
-}
+	room.Routes(router, db)
+	user.Routes(router, db)
+	ws.Routes(router, pool)
 
-func main() {
-	setupRoutes()
-	fmt.Println("Listening on 5000")
-	http.ListenAndServe(":5000", nil)
+	router.Run("localhost:5000")
 }

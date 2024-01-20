@@ -1,10 +1,9 @@
-package websocket
+package wsConfig
 
 import (
+	"github.com/gorilla/websocket"
 	"log"
 	"sync"
-
-	"github.com/gorilla/websocket"
 )
 
 type Client struct {

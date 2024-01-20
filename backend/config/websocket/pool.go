@@ -1,6 +1,8 @@
-package websocket
+package wsConfig
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Pool struct {
 	Register   chan *Client
