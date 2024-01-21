@@ -1,34 +1,36 @@
 const isBrowser = typeof window !== "undefined";
-const socket = isBrowser ? new WebSocket('ws://localhost:5000/ws/join') : null;
+let socket: WebSocket | null = null;
 
 let connect = (cb: any) => {
-  console.log("Attempting Connection...");
-  if (socket) {
-    socket.onopen = () => {
-      console.log("Successfully Connected");
-    };
+  try {
+    if (isBrowser) {
+      console.log("Attempting Connection...");
+      socket = new WebSocket('ws://localhost:5000/ws/join?action=join&room_id=CJRIX');
 
-    socket.onmessage = msg => {
-      cb(msg);
-    };
+      socket.onopen = () => {
+        console.log("Successfully Connected");
+      };
 
-    socket.onclose = event => {
-      console.log("Socket Closed Connection: ", event);
-    };
+      socket.onmessage = (msg) => {
+        cb(msg);
+      };
 
-    socket.onerror = error => {
-      console.log("Socket Error: ", error);
-    };
+      socket.onclose = (event) => {
+        console.log("Socket Closed Connection: ", event);
+      };
+
+      socket.onerror = (error) => {
+        console.error("Socket Error: ", error);
+      };
+    }
+  } catch (error) {
+    console.error('Error creating WebSocket:', error);
   }
-}
+};
 
 let sendMsg = (msg: any) => {
   console.log("sending msg: ", msg);
   if (socket) {
-    // socket.send(JSON.stringify({
-    //   room_id: 1,
-    //   data: msg
-    // }));
     socket.send(msg)
   }
 }

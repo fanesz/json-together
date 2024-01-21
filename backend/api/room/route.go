@@ -10,6 +10,8 @@ func Routes(router *gin.Engine, db *gorm.DB) {
 		Db: db,
 	}
 	r := router.Group("/room")
+	r.GET("/get", controller.GetRoom)
 	r.POST("/create", controller.CreateRoom)
 	r.POST("/update", controller.UpdateData)
+
 }

@@ -9,5 +9,4 @@ func Routes(router *gin.Engine, pool *wsConfig.Pool) {
 	r := router.Group("/ws")
 
 	r.GET("/join", pool.ServeWS)
-
 }

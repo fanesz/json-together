@@ -9,10 +9,10 @@ export default function Home() {
   const [chatHistory, setChatHistory] = useState<string[]>([]);
 
   useEffect(() => {
-    // connect((msg: any) => {
-    //   console.log('Received Message:', JSON.parse(msg.data));
-    //   setChatHistory((prev) => [...prev, JSON.parse(msg.data).body]);
-    // });
+    connect((msg: any) => {
+      console.log('Received Message:', JSON.parse(msg.data));
+      setChatHistory((prev) => [...prev, JSON.parse(msg.data).body]);
+    });
   }, []);
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {

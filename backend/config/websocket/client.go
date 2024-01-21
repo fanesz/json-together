@@ -7,15 +7,16 @@ import (
 )
 
 type Client struct {
-	ID   string
-	Conn *websocket.Conn
-	Pool *Pool
-	mu   sync.Mutex
+	ID     string
+	Conn   *websocket.Conn
+	Pool   *Pool
+	RoomID string `json:"room_id"`
+	mu     sync.Mutex
 }
 
 type Message struct {
-	Type int    `json:"type`
-	Body string `json:"body"`
+	RoomID string `json:"room_id"`
+	Body   string `json:"body"`
 }
 
 func (c *Client) Read() {
@@ -24,12 +25,16 @@ func (c *Client) Read() {
 		c.Conn.Close()
 	}()
 	for {
-		messageType, p, err := c.Conn.ReadMessage()
+		_, clientMessage, err := c.Conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		message := Message{Type: messageType, Body: string(p)}
+
+		message := Message{
+			RoomID: c.RoomID,
+			Body:   string(clientMessage),
+		}
 		c.Pool.Broadcast <- message
 		log.Printf("Message Received: %+v\n", message)
 	}

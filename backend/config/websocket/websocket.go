@@ -1,11 +1,10 @@
 package wsConfig
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"log"
+	"net/http"
 )
 
 var upgrader = websocket.Upgrader{
