@@ -76,9 +76,15 @@ func (a *Controller) GetRoom(c *gin.Context) {
 }
 
 func (a *Controller) UpdateData(c *gin.Context) {
-	// body { room_id, data }
+	// param { room_id } body { data }
 	room := Room{}
 	if err := handler.BindAndStructValidator(c, &room, true); err != nil {
+		return
+	}
+
+	room.RoomID = c.Query("room_id")
+	if room.RoomID == "" {
+		handler.Error(c, http.StatusBadRequest, "Room ID is required")
 		return
 	}
 

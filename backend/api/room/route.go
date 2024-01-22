@@ -14,7 +14,7 @@ func Routes(router *gin.Engine, db *gorm.DB, pool *wsConfig.Pool) {
 	r := router.Group("/api/room")
 	r.POST("/", controller.CreateRoom)
 	r.GET("/", controller.GetRoom)
-	r.POST("/update", controller.UpdateData)
+	r.PUT("/", controller.UpdateData)
 	r.DELETE("/", controller.DeleteRoom)
 	r.GET("/refresh", controller.RefreshTempCode)
 }
