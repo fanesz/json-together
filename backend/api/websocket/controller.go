@@ -1,16 +1,19 @@
-package wsConfig
+package ws
 
 import (
+	wsConfig "backend/config/websocket"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"gorm.io/gorm"
-	"log"
-	"time"
 )
 
 type Controller struct {
-	Db *gorm.DB
+	Db   *gorm.DB
+	Pool *wsConfig.Pool
 }
 
 func handleCloseConnection(conn *websocket.Conn, reason string) {
@@ -24,11 +27,11 @@ func handleCloseConnection(conn *websocket.Conn, reason string) {
 	}
 }
 
-func (pool *Pool) ServeWS(c *gin.Context) {
+func (a *Controller) ServeWS(c *gin.Context) {
 	roomID := c.Query("room_id")
 	action := c.Query("action")
 
-	conn, err := Upgrade(c)
+	conn, err := wsConfig.Upgrade(c)
 	if err != nil {
 		fmt.Fprintf(c.Writer, "%+v\n", err)
 		return
@@ -44,10 +47,10 @@ func (pool *Pool) ServeWS(c *gin.Context) {
 		return
 	}
 
-	pool.Mutex.Lock()
-	_, roomExists := pool.Rooms[roomID]
-	roomClients := len(pool.Rooms[roomID])
-	pool.Mutex.Unlock()
+	a.Pool.Mutex.Lock()
+	_, roomExists := a.Pool.Rooms[roomID]
+	roomClients := len(a.Pool.Rooms[roomID])
+	a.Pool.Mutex.Unlock()
 
 	fmt.Println(action, roomID, roomExists, roomClients)
 
@@ -62,11 +65,11 @@ func (pool *Pool) ServeWS(c *gin.Context) {
 		return
 	}
 
-	client := &Client{
+	client := &wsConfig.Client{
 		Conn:   conn,
-		Pool:   pool,
+		Pool:   a.Pool,
 		RoomID: roomID,
 	}
-	pool.Register <- client
+	a.Pool.Register <- client
 	client.Read()
 }

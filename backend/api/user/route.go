@@ -9,6 +9,6 @@ func Routes(router *gin.Engine, db *gorm.DB) {
 	controller := Controller{
 		Db: db,
 	}
-	r := router.Group("/user")
+	r := router.Group("/api/user")
 	r.GET("/create", controller.CreateUser)
 }

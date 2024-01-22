@@ -1,17 +1,20 @@
 package room
 
 import (
+	wsConfig "backend/config/websocket"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func Routes(router *gin.Engine, db *gorm.DB) {
+func Routes(router *gin.Engine, db *gorm.DB, pool *wsConfig.Pool) {
 	controller := Controller{
-		Db: db,
+		Db:   db,
+		Pool: pool,
 	}
-	r := router.Group("/room")
-	r.GET("/get", controller.GetRoom)
-	r.POST("/create", controller.CreateRoom)
+	r := router.Group("/api/room")
+	r.POST("/", controller.CreateRoom)
+	r.GET("/", controller.GetRoom)
 	r.POST("/update", controller.UpdateData)
-
+	r.DELETE("/", controller.DeleteRoom)
+	r.GET("/refresh", controller.RefreshTempCode)
 }

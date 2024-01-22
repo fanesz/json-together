@@ -6,7 +6,10 @@ import (
 )
 
 func Routes(router *gin.Engine, pool *wsConfig.Pool) {
+	controller := Controller{
+		Pool: pool,
+	}
 	r := router.Group("/ws")
 
-	r.GET("/join", pool.ServeWS)
+	r.GET("/join", controller.ServeWS)
 }

@@ -5,17 +5,15 @@ import (
 	"backend/api/user"
 	"backend/api/websocket"
 	"backend/config/database"
-	wsConfig "backend/config/websocket"
-
-	// "backend/config/websocket"
-	"time"
-
+	"backend/config/websocket"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 func main() {
-	db := config.InitDB()
+	db := DBConfig.InitDB()
+	pool := wsConfig.NewPool()
 
 	router := gin.Default()
 
@@ -31,10 +29,9 @@ func main() {
 		MaxAge: 12 * time.Hour,
 	}))
 
-	pool := wsConfig.NewPool()
 	go pool.Start()
 
-	room.Routes(router, db)
+	room.Routes(router, db, pool)
 	user.Routes(router, db)
 	ws.Routes(router, pool)
 
