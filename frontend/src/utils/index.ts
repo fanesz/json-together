@@ -6,3 +6,4 @@ export const setParam = (paramList: string[][]) => {
   }
   return params;
 }
+

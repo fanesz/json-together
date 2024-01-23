@@ -14,8 +14,8 @@ import (
 func main() {
 	db := DBConfig.InitDB()
 	pool := wsConfig.NewPool()
-
 	router := gin.Default()
+	go pool.Start()
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
@@ -28,8 +28,6 @@ func main() {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
-
-	go pool.Start()
 
 	room.Routes(router, db, pool)
 	user.Routes(router, db)
