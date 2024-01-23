@@ -34,7 +34,7 @@ func QueryValidator(query *gorm.DB, c *gin.Context, count bool) (bool, int64) {
 	}
 	var result int64
 	if query.Count(&result); result == 0 {
-		return false, 0
+		return true, 0
 	}
 	return true, result
 }

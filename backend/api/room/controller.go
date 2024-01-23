@@ -51,10 +51,14 @@ func (a *Controller) GetRoom(c *gin.Context) {
 		return
 	}
 
-	room := Room{}
-	query := a.Db.Where("room_id = ?", roomID).First(&room)
-	val, _ := handler.QueryValidator(query, c, false)
+	room := Room{RoomID: roomID}
+	query := a.Db.Find(&room)
+	val, count := handler.QueryValidator(query, c, true)
 	if !val {
+		return
+	}
+	if count == 0 {
+		handler.Error(c, http.StatusBadRequest, "Room not found")
 		return
 	}
 
@@ -72,7 +76,7 @@ func (a *Controller) GetRoom(c *gin.Context) {
 		}
 	}
 
-	handler.Success(c, http.StatusOK, "Success getting the room", gin.H{"data": room})
+	handler.Success(c, http.StatusOK, "Success getting the room", gin.H{"room": room})
 }
 
 func (a *Controller) UpdateData(c *gin.Context) {
@@ -94,7 +98,7 @@ func (a *Controller) UpdateData(c *gin.Context) {
 		return
 	}
 
-	handler.Success(c, http.StatusOK, "Success updating the data", gin.H{"data": room})
+	handler.Success(c, http.StatusOK, "Success updating the data", gin.H{"room": room})
 }
 
 func (a *Controller) DeleteRoom(c *gin.Context) {
@@ -105,8 +109,7 @@ func (a *Controller) DeleteRoom(c *gin.Context) {
 		return
 	}
 
-	room := Room{}
-	query := a.Db.Where("room_id = ?", roomID).Delete(&room)
+	query := a.Db.Delete(&Room{RoomID: roomID})
 	val, _ := handler.QueryValidator(query, c, false)
 	if !val {
 		return
