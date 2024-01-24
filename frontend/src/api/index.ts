@@ -3,7 +3,6 @@ import axios, {
   AxiosHeaders,
   AxiosInstance,
   AxiosRequestConfig,
-  AxiosResponse,
 } from "axios";
 
 type Headers = {
@@ -23,31 +22,7 @@ export default class API {
       baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`,
       headers: this.headers as unknown as AxiosHeaders,
     } as AxiosRequestConfig);
-
-    // this.api.interceptors.response.use(
-    //   this.handleSuccessResponse,
-    //   this.handleErrorResponse
-    // );
-
-    // this.api.interceptors.request.use((config) => {
-    //   config.validateStatus = status => status < 500;
-    //   return config;
-    // });
   }
-
-  // handleSuccessResponse<T>(response: AxiosResponse<APIResponse<T>>): AxiosResponse<APIResponse<T>> {
-  //   return response;
-  // }
-
-  // handleErrorResponse<T>(error: any): Promise<APIResponse<T>> {
-  //   if (axios.isAxiosError(error)) {
-  //     const response = error.response;
-  //     if (response && (response.status === 400 || response.status === 500)) {
-  //       return Promise.reject(response.data);
-  //     }
-  //   }
-  //   return Promise.reject(error.response || error);
-  // }
 
   async GET<T>(path: string): Promise<APIResponse<T>> {
     try {
