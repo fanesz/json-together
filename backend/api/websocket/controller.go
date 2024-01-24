@@ -2,8 +2,10 @@ package ws
 
 import (
 	wsConfig "backend/config/websocket"
+	"backend/handler"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,9 +29,30 @@ func handleCloseConnection(conn *websocket.Conn, reason string) {
 	}
 }
 
+func (a *Controller) CreateWS(c *gin.Context) {
+	roomCode := c.Query("room_code")
+
+	if len(roomCode) != 5 {
+		handler.Error(c, http.StatusBadRequest, "Invalid action parameter")
+		return
+	}
+
+	a.Pool.Mutex.Lock()
+	_, isExist := a.Pool.Rooms[roomCode]
+
+	if isExist {
+		handler.Error(c, http.StatusConflict, "The specified room already exists.")
+		a.Pool.Mutex.Unlock()
+		return
+	} else {
+		a.Pool.Rooms[roomCode] = make(map[*wsConfig.Client]bool)
+		a.Pool.Mutex.Unlock()
+	}
+	handler.Success(c, http.StatusOK, "Room created successfully", gin.H{})
+}
+
 func (a *Controller) ServeWS(c *gin.Context) {
-	roomID := c.Query("room_id")
-	action := c.Query("action")
+	roomCode := c.Query("room_code")
 
 	conn, err := wsConfig.Upgrade(c)
 	if err != nil {
@@ -37,38 +60,24 @@ func (a *Controller) ServeWS(c *gin.Context) {
 		return
 	}
 
-	if action != "create" && action != "join" {
-		handleCloseConnection(conn, "Invalid action parameter")
-		return
-	}
-
-	if len(roomID) != 5 {
-		handleCloseConnection(conn, "room_id parameter is required")
+	if len(roomCode) != 5 {
+		handleCloseConnection(conn, "Invalid parameter")
 		return
 	}
 
 	a.Pool.Mutex.Lock()
-	_, roomExists := a.Pool.Rooms[roomID]
-	roomClients := len(a.Pool.Rooms[roomID])
+	_, roomExists := a.Pool.Rooms[roomCode]
 	a.Pool.Mutex.Unlock()
 
-	fmt.Println(action, roomID, roomExists, roomClients)
-
-	if action == "create" && roomExists && roomClients != 0 {
-		handleCloseConnection(conn, "The specified room already exists. Please choose a different room ID.")
-		return
-	} else if action == "join" && !roomExists {
+	if !roomExists {
 		handleCloseConnection(conn, "The specified room does not exist.")
-		return
-	} else if action == "join" && roomClients == 0 {
-		handleCloseConnection(conn, "The specified room already closed. Please choose a different room ID.")
 		return
 	}
 
 	client := &wsConfig.Client{
-		Conn:   conn,
-		Pool:   a.Pool,
-		RoomID: roomID,
+		Conn:     conn,
+		Pool:     a.Pool,
+		RoomCode: roomCode,
 	}
 	a.Pool.Register <- client
 	client.Read()

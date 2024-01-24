@@ -33,17 +33,17 @@ func (pool *Pool) Start() {
 		case client := <-pool.Register:
 			pool.Mutex.Lock()
 			pool.Clients[client] = true
-			if _, ok := pool.Rooms[client.RoomID]; !ok {
-				pool.Rooms[client.RoomID] = make(map[*Client]bool)
+			if _, ok := pool.Rooms[client.RoomCode]; !ok {
+				pool.Rooms[client.RoomCode] = make(map[*Client]bool)
 			}
-			pool.Rooms[client.RoomID][client] = true
+			pool.Rooms[client.RoomCode][client] = true
 			pool.Mutex.Unlock()
 
 			fmt.Println("size of connection pool:", len(pool.Clients))
-			for c := range pool.Rooms[client.RoomID] {
+			for c := range pool.Rooms[client.RoomCode] {
 				c.Conn.WriteJSON(Message{Activity: "New user joined..."})
 			}
-			if history, ok := pool.MessageHistory[client.RoomID]; ok {
+			if history, ok := pool.MessageHistory[client.RoomCode]; ok {
 				if len(history) > 0 {
 					lastMsg := history[len(history)-1]
 					client.Conn.WriteJSON(lastMsg)
@@ -53,11 +53,11 @@ func (pool *Pool) Start() {
 		case client := <-pool.Unregister:
 			pool.Mutex.Lock()
 			delete(pool.Clients, client)
-			delete(pool.Rooms[client.RoomID], client)
+			delete(pool.Rooms[client.RoomCode], client)
 			pool.Mutex.Unlock()
 
 			fmt.Println("size of connection pool:", len(pool.Clients))
-			for c := range pool.Rooms[client.RoomID] {
+			for c := range pool.Rooms[client.RoomCode] {
 				c.Conn.WriteJSON(Message{Activity: "User disconnected..."})
 			}
 
@@ -65,7 +65,7 @@ func (pool *Pool) Start() {
 			fmt.Println("Sending message to all clients in the room")
 
 			pool.Mutex.Lock()
-			roomClients, roomExists := pool.Rooms[message.RoomID]
+			roomClients, roomExists := pool.Rooms[message.RoomCode]
 			pool.Mutex.Unlock()
 
 			if roomExists {
@@ -75,7 +75,7 @@ func (pool *Pool) Start() {
 						return
 					}
 				}
-				pool.MessageHistory[message.RoomID] = append(pool.MessageHistory[message.RoomID], message)
+				pool.MessageHistory[message.RoomCode] = append(pool.MessageHistory[message.RoomCode], message)
 			}
 
 		}

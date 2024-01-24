@@ -7,15 +7,15 @@ import (
 )
 
 type Client struct {
-	ID     string
-	Conn   *websocket.Conn
-	Pool   *Pool
-	RoomID string `json:"room_id"`
-	mu     sync.Mutex
+	ID       string
+	Conn     *websocket.Conn
+	Pool     *Pool
+	RoomCode string `json:"room_code"`
+	mu       sync.Mutex
 }
 
 type Message struct {
-	RoomID   string `json:"room_id"`
+	RoomCode string `json:"room_code"`
 	Activity string `json:"activity"`
 	Body     string `json:"body"`
 }
@@ -33,7 +33,7 @@ func (c *Client) Read() {
 		}
 
 		message := Message{
-			RoomID:   c.RoomID,
+			RoomCode: c.RoomCode,
 			Body:     string(clientMessage),
 			Activity: "",
 		}

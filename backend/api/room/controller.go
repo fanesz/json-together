@@ -44,15 +44,22 @@ func (a *Controller) CreateRoom(c *gin.Context) {
 }
 
 func (a *Controller) GetRoom(c *gin.Context) {
-	// param { room_id }
+	// param { room_id (or room code) }
 	roomID := c.Query("room_id")
-	if roomID == "" {
+	room := Room{}
+	var typeID string
+	if len(roomID) == 5 {
+		room.TempRoomID = roomID
+		typeID = "temp_room_id"
+	} else if len(roomID) == 20 {
+		room.RoomID = roomID
+		typeID = "room_id"
+	} else {
 		handler.Error(c, http.StatusBadRequest, "Room ID is required")
 		return
 	}
 
-	room := Room{RoomID: roomID}
-	query := a.Db.Find(&room)
+	query := a.Db.Where(&room).Find(&room)
 	val, count := handler.QueryValidator(query, c, true)
 	if !val {
 		return
@@ -61,8 +68,9 @@ func (a *Controller) GetRoom(c *gin.Context) {
 		handler.Error(c, http.StatusBadRequest, "Room not found")
 		return
 	}
+	fmt.Println(count)
 
-	if room.TempRoomID == "" {
+	if typeID == "room_id" && room.TempRoomID == "" {
 		for {
 			room.TempRoomID = utils.RandomString(5)
 			if !isCodeExist("temp_room_id", room.TempRoomID, a.Db) {
