@@ -44,8 +44,9 @@ func (pool *Pool) Start() {
 				c.Conn.WriteJSON(Message{Activity: "New user joined..."})
 			}
 			if history, ok := pool.MessageHistory[client.RoomID]; ok {
-				for _, msg := range history {
-					client.Conn.WriteJSON(msg)
+				if len(history) > 0 {
+					lastMsg := history[len(history)-1]
+					client.Conn.WriteJSON(lastMsg)
 				}
 			}
 

@@ -15,9 +15,9 @@ type Client struct {
 }
 
 type Message struct {
-	RoomID string `json:"room_id"`
+	RoomID   string `json:"room_id"`
 	Activity string `json:"activity"`
-	Body   string `json:"body"`
+	Body     string `json:"body"`
 }
 
 func (c *Client) Read() {
@@ -33,8 +33,9 @@ func (c *Client) Read() {
 		}
 
 		message := Message{
-			RoomID: c.RoomID,
-			Body:   string(clientMessage),
+			RoomID:   c.RoomID,
+			Body:     string(clientMessage),
+			Activity: "",
 		}
 		c.Pool.Broadcast <- message
 		log.Printf("Message Received: %+v\n", message)
