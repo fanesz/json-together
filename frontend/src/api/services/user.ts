@@ -11,9 +11,6 @@ export default class UserServices {
   async register() {
     const targetPath = this.basePath;
     const res = await this.api.GET<User>(targetPath);
-    if (res) {
-      return res.data;
-    }
-    return false;
+    return res.data;
   }
 }

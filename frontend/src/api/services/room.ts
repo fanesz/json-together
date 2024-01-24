@@ -16,7 +16,7 @@ type Room = {
       CreatedAt: string;
       UpdatedAt: string;
     };
-    data: any;
+    data: string;
     CreatedAt: string;
     UpdatedAt: string;
   };
@@ -42,6 +42,8 @@ export default class RoomServices {
     const res: APIResponse<CreateResult> = await this.api.POST(targetPath, {
       user_id: userID,
     });
+    console.log(res);
+
     return res.data;
   }
 

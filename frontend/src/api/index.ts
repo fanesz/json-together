@@ -33,15 +33,30 @@ export default class API {
     }
   }
 
-  POST<T>(path: string, data: any): Promise<APIResponse<T>> {
-    return this.api.post(path, data);
+  async POST<T>(path: string, data: any): Promise<APIResponse<T>> {
+    try {
+      const res = await this.api.post(path, data);
+      return res;
+    } catch (err) {
+      return { data: null };
+    }
   }
 
-  PUT<T>(path: string, data: any): Promise<APIResponse<T>> {
-    return this.api.put(path, data);
+  async PUT<T>(path: string, data: any): Promise<APIResponse<T>> {
+    try {
+      const res = await this.api.put(path, data);
+      return res;
+    } catch (err) {
+      return { data: null };
+    }
   }
 
-  DELETE<T>(path: string): Promise<APIResponse<T>> {
-    return this.api.delete(path);
+  async DELETE<T>(path: string): Promise<APIResponse<T>> {
+    try {
+      const res = await this.api.delete(path);
+      return res;
+    } catch (err) {
+      return { data: null };
+    }
   }
 }
