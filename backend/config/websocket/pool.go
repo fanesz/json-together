@@ -1,9 +1,12 @@
 package wsConfig
 
 import (
-	"fmt"
+	"backend/api/room"
+	"github.com/gorilla/websocket"
+	"gorm.io/gorm"
 	"log"
 	"sync"
+	"time"
 )
 
 type Pool struct {
@@ -27,19 +30,22 @@ func NewPool() *Pool {
 	}
 }
 
-func (pool *Pool) Start() {
+func (pool *Pool) Start(db *gorm.DB) {
 	for {
 		select {
 		case client := <-pool.Register:
 			pool.Mutex.Lock()
-			pool.Clients[client] = true
 			if _, ok := pool.Rooms[client.RoomCode]; !ok {
-				pool.Rooms[client.RoomCode] = make(map[*Client]bool)
+				client.Conn.WriteControl(
+					websocket.CloseMessage,
+					[]byte("Room not found"),
+					time.Now().Add(time.Second),
+				)
 			}
+			pool.Clients[client] = true
 			pool.Rooms[client.RoomCode][client] = true
 			pool.Mutex.Unlock()
 
-			fmt.Println("size of connection pool:", len(pool.Clients))
 			for c := range pool.Rooms[client.RoomCode] {
 				c.Conn.WriteJSON(Message{Activity: "New user joined..."})
 			}
@@ -56,14 +62,22 @@ func (pool *Pool) Start() {
 			delete(pool.Rooms[client.RoomCode], client)
 			pool.Mutex.Unlock()
 
-			fmt.Println("size of connection pool:", len(pool.Clients))
+			go func() {
+				time.Sleep(1 * time.Minute)
+				pool.Mutex.Lock()
+				clientInsideRoom := len(pool.Rooms[client.RoomCode])
+				pool.Mutex.Unlock()
+				if clientInsideRoom == 0 {
+					delete(pool.Rooms, client.RoomCode)
+					db.Model(&room.Room{}).Where("temp_room_id = ?", client.RoomCode).Update("temp_room_id", "")
+				}
+			}()
+
 			for c := range pool.Rooms[client.RoomCode] {
 				c.Conn.WriteJSON(Message{Activity: "User disconnected..."})
 			}
 
 		case message := <-pool.Broadcast:
-			fmt.Println("Sending message to all clients in the room")
-
 			pool.Mutex.Lock()
 			roomClients, roomExists := pool.Rooms[message.RoomCode]
 			pool.Mutex.Unlock()

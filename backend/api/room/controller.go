@@ -1,19 +1,16 @@
 package room
 
 import (
-	wsConfig "backend/config/websocket"
 	"backend/handler"
 	"backend/utils"
 	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"net/http"
 )
 
 type Controller struct {
-	Db   *gorm.DB
-	Pool *wsConfig.Pool
+	Db *gorm.DB
 }
 
 func (a *Controller) CreateRoom(c *gin.Context) {
@@ -162,7 +159,6 @@ func isCodeExist(field string, code string, db *gorm.DB) bool {
 	query := db.Model(Room{}).Select("count(*) > 0").Where(field+" = ?", code).Find(&isExist)
 	val, _ := handler.QueryValidator(query, nil, false)
 	if !val {
-		fmt.Println("Error checking code")
 		return false
 	}
 	return isExist

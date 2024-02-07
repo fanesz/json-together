@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"backend/api/room"
 	wsConfig "backend/config/websocket"
 	"backend/handler"
 	"fmt"
@@ -37,8 +38,19 @@ func (a *Controller) CreateWS(c *gin.Context) {
 		return
 	}
 
+	var isExist bool
+	query := a.Db.Model(&room.Room{}).Select("count(*) > 0").Where("temp_room_id = ?", roomCode).Find(&isExist)
+	val, _ := handler.QueryValidator(query, c, false)
+	if !val {
+		return
+	}
+	if !isExist {
+		handler.Error(c, http.StatusNotFound, "Room not found")
+		return
+	}
+
 	a.Pool.Mutex.Lock()
-	_, isExist := a.Pool.Rooms[roomCode]
+	_, isExist = a.Pool.Rooms[roomCode]
 
 	if isExist {
 		handler.Error(c, http.StatusConflict, "The specified room already exists.")
