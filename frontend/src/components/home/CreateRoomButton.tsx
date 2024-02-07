@@ -5,7 +5,11 @@ import Button from "../_shared/Button";
 import RoomServices from "@/api/services/room";
 import { getLocalStorage } from "@/utils/LocalStorage";
 
-const CreateRoomButton = () => {
+interface props {
+  className?: string;
+}
+const CreateRoomButton = (props: props) => {
+  const { className } = props;
   const router = useRouter();
   const room = new RoomServices();
 
@@ -19,8 +23,8 @@ const CreateRoomButton = () => {
   };
 
   return (
-    <div>
-      <Button onClick={handleCreateRoom}>Create Room</Button>
+    <div className={`${className}`}>
+      <Button onClick={handleCreateRoom}>Create</Button>
     </div>
   );
 };

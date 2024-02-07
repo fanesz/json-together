@@ -9,7 +9,7 @@ import { useEffect } from "react";
 const websocket = new WebsocketServices();
 const room = new RoomServices();
 
-const Page = ({
+const Room = ({
   params,
 }: {
   params: {
@@ -42,4 +42,4 @@ const Page = ({
   }, [params, router]);
 };
 
-export default Page;
+export default Room;

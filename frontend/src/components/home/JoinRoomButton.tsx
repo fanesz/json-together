@@ -4,7 +4,11 @@ import { useRouter } from "next/navigation";
 import Button from "../_shared/Button";
 import { useState } from "react";
 
-const JoinRoomButton = () => {
+interface props {
+  className?: string;
+}
+const JoinRoomButton = (props: props) => {
+  const { className } = props;
   const router = useRouter();
   const [roomCode, setRoomCode] = useState("");
 
@@ -17,13 +21,15 @@ const JoinRoomButton = () => {
   };
 
   return (
-    <div>
+    <div className={`${className}`}>
       <input
         className="text-black"
+        type="text"
+        placeholder="Enter a Room Code"
         value={roomCode}
         onChange={handleSetRoomCode}
       />
-      <Button onClick={handleJoinRoom}>Join Room</Button>
+      <Button onClick={handleJoinRoom}>Join</Button>
     </div>
   );
 };

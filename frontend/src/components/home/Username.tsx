@@ -1,22 +1,11 @@
 "use client";
 
-import UserServices from "@/api/services/user";
+import { registerUser } from "@/utils";
 import { getLocalStorage, setLocalStorage } from "@/utils/LocalStorage";
 import { useEffect, useState } from "react";
 
-const user = new UserServices();
-
 const Username = () => {
   const [username, setUsername] = useState("");
-
-  const registerUser = async () => {
-    const res = await user.register();
-    if (res) {
-      setLocalStorage("user_id", res.data.user_id);
-    } else {
-      console.log("Error registering user");
-    }
-  };
 
   useEffect(() => {
     setUsername(getLocalStorage("username") || "Guest");
@@ -31,8 +20,8 @@ const Username = () => {
   };
 
   return (
-    <div>
-      name:
+    <div className="flex gap-2">
+      <div>Join as</div>
       <input
         className="text-black"
         onChange={handleSetUsername}
