@@ -15,3 +15,8 @@ export type WebsocketData = {
 };
 
 export type WebsocketResponse = MessageEvent<string>;
+
+export type InputHistory = {
+  currentPos: number;
+  value: string[];
+}
