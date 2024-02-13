@@ -2,26 +2,18 @@
 
 import { InputHistory } from "@/type";
 import { Dispatch, KeyboardEvent, SetStateAction, useEffect, useState } from "react";
+import { useUndoRedo } from "../store/history";
 
 interface Props {
-  history: InputHistory;
-  setHistory: Dispatch<SetStateAction<InputHistory>>;
   value: string;
 }
 const useHistory = (props: Props): any => {
-  const { history, setHistory, value } = props;
+  const { value } = props;
+  const { addHistory, undo, redo, present } = useUndoRedo();
 
   useEffect(() => {
     console.log("saving to history...");
-
-    // saving / checking logic
-
-    // example of how to save to history
-    // setHistory({
-    //   currentPos: history.currentPos + 1,
-    //   value: [...history.value, value],
-    // })
-
+    addHistory(value);
   }, [value]);
 
   const handleUndoRedo = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -30,10 +22,10 @@ const useHistory = (props: Props): any => {
 
     if (isCTRLPressed && keyPressed === 'z') {
       e.preventDefault();
-      // undo
+      undo();
     } else if (isCTRLPressed && keyPressed === 'y') {
       e.preventDefault();
-      // redo
+      redo();
     }
 
   }

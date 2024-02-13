@@ -1,7 +1,6 @@
 'use client';
 
-import { KeyboardEvent, useEffect, useRef, useState } from "react";
-import useDebounce from "./useDebounce";
+import { useRef, useState } from "react";
 
 type ElelementDiff = {
   index: number;
@@ -10,6 +9,8 @@ type ElelementDiff = {
   prev: string;
   next: string;
 }
+
+type SetTextAction = "ADD" | "DELETE" | "SKIP"
 
 function append(array: string[], index: number, value: string): string[] {
   return array.slice(0, index).concat(value).concat(array.slice(index));
@@ -61,7 +62,7 @@ function getElementDiff(oldText: string[], newText: string[], currentFocus: numb
   }
 
   if (result.index < newTextArr.length - 1 && result.next === '') {
-    result.next = newTextArr[result.index] || '';
+    result.next = oldTextArr[result.index] || '';
   }
 
   result.line = result.index == -1 ? -1 : result.line;
@@ -81,9 +82,12 @@ const useJsonFormat = (): [string, any, any] => {
       }
     }, 0);
   };
-  
-  const handleSetText = (text: string | null, focusToSet: number) => {
-    setText(text || '');
+
+
+  const handleSetText = (text: string, focusToSet: number, action: SetTextAction) => {
+    if (action === 'ADD' || action === 'DELETE') {
+      setText(text);
+    }
     focusToSet !== -1 && setFocus(focusToSet);
     // text !== null && setHistory(prev => [...prev, text]);
   };
@@ -106,25 +110,24 @@ const useJsonFormat = (): [string, any, any] => {
         '"': '"',
         "'": "'"
       };
-      const charToAppend = pairedChar[elementDiff.value as keyof typeof pairedChar];
+
+      // passing the char if the input value == the next char
+      if (Object.values(pairedChar).indexOf(elementDiff.value) !== -1 && elementDiff.next === elementDiff.value) {
+        console.log("[passing the char if the input value == the next char]");
+        handleSetText('', elementDiff.index + 1, "SKIP");
+        return;
+      }
 
       // auto close paired char
+      const charToAppend = pairedChar[elementDiff.value as keyof typeof pairedChar];
       if (charToAppend !== undefined) {
         console.log("[auto close paired char]");
         handleSetText(
           append(newText, elementDiff.index + 1, charToAppend).join(''),
-          elementDiff.index + 1
+          elementDiff.index + 1,
+          "ADD"
         );
         return;
-      }
-
-      // passing the char if the input value == the next char
-      if (Object.values(pairedChar).indexOf(elementDiff.value) !== -1) {
-        console.log("[passing the char if the input value == the next char]");
-        if (elementDiff.next === elementDiff.value) {
-          handleSetText(null, elementDiff.index + 1);
-          return;
-        }
       }
 
       // auto tab system for new line
@@ -147,7 +150,8 @@ const useJsonFormat = (): [string, any, any] => {
               elementDiff.index + 1,
               '\t'.repeat(totalTabInLine == 0 ? 1 : totalTabInLine + 1) + '\n' + '\t'.repeat(totalTabInLine)
             ).join(''),
-            elementDiff.index + totalTabInLine + 2
+            elementDiff.index + totalTabInLine + 2,
+            "ADD"
           );
           return;
         }
@@ -160,7 +164,8 @@ const useJsonFormat = (): [string, any, any] => {
           const totalTabInLine = totalTabInSentences(oldTextPerLine[elementDiff.line - 1]);
           handleSetText(
             append(newText, elementDiff.index + 1, '\t'.repeat(totalTabInLine)).join(''),
-            elementDiff.index + totalTabInLine + 1
+            elementDiff.index + totalTabInLine + 1,
+            "ADD"
           );
           return;
         }
@@ -171,7 +176,7 @@ const useJsonFormat = (): [string, any, any] => {
     // detect added multiple elements
     if (newText.length - oldText.length > 1) {
       console.log('[added multiple elements]');
-      handleSetText(newText.join(''), -1);
+      handleSetText(newText.join(''), -1, "ADD");
       return;
     }
 
@@ -194,7 +199,8 @@ const useJsonFormat = (): [string, any, any] => {
       ) {
         handleSetText(
           newText.slice(0, elementDiff.index).concat(newText.slice(elementDiff.index + 1)).join(''),
-          elementDiff.index
+          elementDiff.index,
+          'DELETE'
         )
         return;
       }
@@ -203,12 +209,12 @@ const useJsonFormat = (): [string, any, any] => {
     // detect deleted multiple elements
     if (oldText.length - newText.length > 1) {
       console.log('[deleted multiple elements]');
-      handleSetText(newText.join(''), -1);
+      handleSetText(newText.join(''), -1, 'DELETE');
       return;
     }
 
     // normal input
-    handleSetText(inputText, -1);
+    handleSetText(inputText, -1, 'ADD');
 
     // setText(prev => (prev = newText.join('')));
     // focusToSet !== -1 && setFocus(focusToSet);
@@ -219,7 +225,7 @@ const useJsonFormat = (): [string, any, any] => {
     //   textareaRef.current.scrollTop = prevScrollTop
     // }, 1);
   };
-  
+
 
 
 

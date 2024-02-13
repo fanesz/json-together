@@ -6,17 +6,15 @@ import useJsonFormat from "@/hooks/useJsonFormat";
 import { InputHistory } from "@/type";
 import { useEffect, useState } from "react";
 
-
-
 const Page = () => {
   const [text, handleInput, textareaRef] = useJsonFormat();
-  const [history, setHistory] = useState<InputHistory>({
-    currentPos: 0,
-    value: [""],
-  });
+  // const [history, setHistory] = useState<InputHistory>({
+  //   currentPos: 0,
+  //   value: [""], 
+  // });
 
   const debouncedValue = useDebounce(text, 1000);
-  const handleUndoRedo = useHistory({ history, setHistory, value: debouncedValue });
+  const handleUndoRedo = useHistory({ value: debouncedValue });
 
   const generateLineNumbers = () => {
     return Array.from({ length: text.split("\n").length }, (_, index) => index + 1);
