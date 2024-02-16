@@ -1,23 +1,25 @@
-'use client';
+"use client";
 
 import useDebounce from "@/hooks/useDebounce";
-import useHistory from "@/hooks/useHistory";
+import useUndoRedo from "@/hooks/useUndoRedo";
 import useJsonFormat from "@/hooks/useJsonFormat";
-import { InputHistory } from "@/type";
-import { useEffect, useState } from "react";
 
 const Page = () => {
-  const [text, handleInput, textareaRef] = useJsonFormat();
-  // const [history, setHistory] = useState<InputHistory>({
-  //   currentPos: 0,
-  //   value: [""], 
-  // });
-
-  const debouncedValue = useDebounce(text, 1000);
-  const handleUndoRedo = useHistory({ value: debouncedValue });
+  const [text, mouseFocus, handleSetText, handleInput, textareaRef, setFocus] = useJsonFormat();
+  const debouncedText = useDebounce(text, 1000);
+  const handleUndoRedo = useUndoRedo({
+    text: text,
+    debouncedText: debouncedText,
+    setText: handleSetText,
+    mouseFocus: mouseFocus,
+    setFocus: setFocus,
+  });
 
   const generateLineNumbers = () => {
-    return Array.from({ length: text.split("\n").length }, (_, index) => index + 1);
+    return Array.from(
+      { length: text.split("\n").length },
+      (_, index) => index + 1,
+    );
   };
 
   return (
